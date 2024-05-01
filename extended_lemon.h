@@ -908,7 +908,7 @@ XLI_ADEF(zyv)
   XL_Word vec = (xl->load(xl, xl->p) + xl->y) & 0xFF;
   xl->p += 1;
   xl->addr = XLI_load_word_zpg(xl, vec);
-  xl->icycles += 1;
+  xl->icycles += 3;
 }
 
 /************************************************************/
