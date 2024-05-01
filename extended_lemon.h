@@ -1470,7 +1470,7 @@ XLI_get_opcode(XL_Byte value)
     /* $00 Specials and register incdec */
     XLI_OP(inv, nam), XLI_OP(brk, nam),
     XLI_OP(rti, nam), XLI_OP(ret, nam),
-    XLI_OP(for, nam), XLI_OP(fnd, nam),
+    XLI_OP(for, imm), XLI_OP(fnd, imm),
     XLI_OP(clc, nam), XLI_OP(nop, nam),
     XLI_OP(app, nam), XLI_OP(amm, nam),
     XLI_OP(spp, nam), XLI_OP(smm, nam),
