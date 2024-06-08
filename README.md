@@ -13,4 +13,4 @@ For more information read the source code.
 ## Specification
 
 The Extended Lemon Microprocessor is defined in
-a markdown document [extended_lemon.md](./extended_lemon.md).
+the markdown document [extended_lemon.md](./extended_lemon.md).
