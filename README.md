@@ -23,6 +23,13 @@ used to learn XL programming. Unfortunately there is no debug
 functionality, but nobody stops you from implementing the debug
 mode yourself.
 
+You can store a byte to the address `$00FF` to write that byte to
+the standard output. You can load the byte at the address `$00FF`
+to read from the standard input.
+
+To terminate the program you just need to store any value to
+the address `$7FFF`.
+
 ### XLX File Format
 
 XLX file is just 32KB of program memory (32768 bytes). XLX loads
@@ -30,7 +37,7 @@ those bytes to address `$8000` which is the second half of the XL
 address space. The first half is the random access memory, the
 second - read-only memory.
 
-Why you cannot create a file then 32KB? Because the last 8 bytes
-contain interrupt addresses, including of course the reset interrupt
-address. That address is needed for the XL to found the first
-instruction byte to execute.
+Why you cannot create a file less than 32KB? Because the last
+8 bytes contain interrupt addresses, including of course the reset
+interrupt address. That address is needed for the XL to found
+the first instruction byte to execute.
