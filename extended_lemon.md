@@ -42,9 +42,9 @@ a minimum part of the work.
 The address of a multibyte object is the address of
 the first byte of that object.
 
-LSB stands for least significant byte.
+LSB stands for the least significant byte.
 
-MSB stands for most significant byte.
+MSB stands for the most significant byte.
 
 ## Introduction
 
@@ -58,11 +58,11 @@ The XL is little endian, which means addresses are stored
 in memory least significant byte first. For example
 the address `$ABCD` is stored as two bytes `$CD`, `$AB`.
 
-Zero page is a range of addresses from `$0000` to `$00FF`
+The zero page is a range of addresses from `$0000` to `$00FF`
 (the fisrt 256 bytes).
-Stack is a range of addresses from `$0100` to `$01FF`
+The stack is a range of addresses from `$0100` to `$01FF`
 (the second 256 bytes).
-Interrupt address are store in range `$FFF8-$FFFF`
+The interrupt addresses are stored in range `$FFF8-$FFFF`
 (the last 8 bytes).
 
 ## Registers
@@ -162,7 +162,21 @@ instructions that have no result.
 
 ## Cycle
 
+When running the XL repeat the next sequence in a loop:
 
+1. Process interrupts if any.
+2. Read the instruction byte at the program counter.
+3. Increment the program counter by 1.
+4. Run the adressing mode according to the instruction byte.
+5. Run the instruction according to the instruction byte.
+
+How many cycles it will take for the XL to finnish the above
+sequence depends on interrupts if requested, the instruction
+and the addressing mode.
+
+The minimum number of cycles is 1, which can only happen
+when there are no interrupts requested, no addressing mode is
+executed and the instruction takes 1 cycle to finnish.
 
 ## Interrupts
 
