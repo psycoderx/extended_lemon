@@ -17,9 +17,9 @@ the markdown document [extended_lemon.md](./extended_lemon.md).
 
 ## XLX
 
-[XLX](./xlx.c) is a simple virtual machine powered by XL. A good
-example of how to use the XL C library. This VM Can be used to
-learn XL programming. Unfortunately there is no debug
+[xlx.c](./xlx.c) is a simple virtual machine powered by XL.
+A good example of how to use the XL C library. This VM Can be
+used to learn XL programming. Unfortunately there is no debug
 functionality, but nobody stops you from implementing the debug
 mode yourself.
 
