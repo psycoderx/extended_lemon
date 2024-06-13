@@ -259,7 +259,7 @@ XL_DECL XL_Bool XL_CALL
 XL_get_flag(XL *xl, XL_Byte fmask);
 
 /*
-Init XL state with defualt values. Call this function to get
+Init XL state with default values. Call this function to get
 a valid XL state. Then you can use that valid XL state in
 other functions.
 */
@@ -834,7 +834,7 @@ XLI_ADEF(abs)
 /************************************************************/
 XLI_ADEF(abx)
 {
-  xl->addr = XLI_load_word(xl, xl->p);
+  xl->addr = XLI_load_word(xl, xl->p) + (XL_Word)xl->x;
   xl->p += 2;
   xl->icycles += 2;
 }
@@ -842,7 +842,7 @@ XLI_ADEF(abx)
 /************************************************************/
 XLI_ADEF(aby)
 {
-  xl->addr = XLI_load_word(xl, xl->p);
+  xl->addr = XLI_load_word(xl, xl->p) + (XL_Word)xl->y;
   xl->p += 2;
   xl->icycles += 2;
 }
@@ -853,10 +853,9 @@ XLI_ADEF(rel)
   XL_Byte data = xl->load(xl, xl->p);
   xl->p += 1;
   offset = data;
-  if (data > 127) {
-    offset = 0xFF00 | data;
-  }
-  xl->addr = xl->p - 2 + offset;
+  if (offset > 127)
+    offset |= 0xFF00;
+  xl->addr = xl->p + offset - 2;
   xl->icycles += 1;
 }
 
