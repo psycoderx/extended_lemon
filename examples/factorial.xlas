@@ -1,0 +1,36 @@
+; Factorial in XL assembly language
+; BUILD: xlas factorial.xlas fact.xlx
+; RUN: xlx fact.xlx
+let io 0xFF
+let exit 0x7FFF
+let A 0x00
+  reset:
+lda #5
+cal factorial; = 120 or 'x' in ASCII
+sta io
+lda #0x0A
+sta io
+sta exit
+  factorial:
+cmp #0
+jtz ~factorial_0
+pha
+amm
+cal factorial
+tax
+pla
+sta A
+zra
+  factorial_mult:
+add A
+xmm
+jfz ~factorial_mult
+ret
+  factorial_0:
+lda #1
+ret
+  void:
+rb 0xFFFE - $
+  reset_address:
+dw reset
+
