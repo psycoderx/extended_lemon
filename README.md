@@ -46,3 +46,10 @@ the first instruction byte to execute.
 
 [xlas.c](./xlas.c) is the XL assembler.
 Do you really need an explanation?
+See the examples!!!
+
+## XLDIS
+
+[xldis.c](./xldis.c) is the XL disassembler.
+For this to work your binary file must be a valid `.xlx` file,
+with all the instructions placed at the beginning of the file.
