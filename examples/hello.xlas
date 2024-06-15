@@ -1,0 +1,20 @@
+; Hello, World!!! in XL assembly language
+; BUILD: xlas hello.xlas hello1.xlx
+; RUN: xlx hello1.xlx
+let io 0xFF
+let exit 0x7FFF
+  reset:
+lda x message
+jtz ~break
+sta io
+xpp
+jmp ~reset
+  break:
+sta exit
+  message:
+db 'Hello, World!!!', 0x0A, 0
+  void:
+rb 0xFFFE - $
+  reset_address:
+dw reset
+

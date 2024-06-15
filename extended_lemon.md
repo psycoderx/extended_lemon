@@ -547,7 +547,7 @@ Opcode `$00` will always be an invalid instruction.
 | `$_5` | `FND` `IMM` 2 | `JFU` `REL` 2 | `PLF` `NAM` 2 | `LDA` `ABY` 4 | `LDX` `ZPY` 3 | `CMP` `ABY` 4 | `STX` `ZYV` 5 | `CAL` `ABY` 5 |
 | `$_6` | `CLC` `NAM` 1 | `JFV` `REL` 2 | `PLX` `NAM` 2 | `LDA` `ZPX` 3 | `LDX` `VEC` 6 | `CMP` `ZPX` 3 | `LDA` `ZVX` 5 | `CAL` `ZPX` 4 |
 | `$_7` | `NOP` `NAM` 1 | `JFZ` `REL` 2 | `PLY` `NAM` 2 | `LDA` `ZPY` 3 | `LDX` `ZYV` 5 | `CMP` `ZPY` 3 | `LDA` `ZYV` 5 | `CAL` `ZPY` 4 |
-| `$_8` | `APP` `NAM` 1 | `JTB` `REL` 2 | `TAF` `NAM` 1 | `ZRA` `NAM` 1 | `ZRX` `NAM` 1 | `JMP` `REL` 2 | `STY` `ABS` 4 | `CAL` `ZVX` 6 |
+| `$_8` | `APP` `NAM` 1 | `JTB` `REL` 2 | `TAF` `NAM` 1 | `ZRA` `NAM` 1 | `ZRY` `NAM` 1 | `JMP` `REL` 2 | `STY` `ABS` 4 | `CAL` `ZVX` 6 |
 | `$_9` | `AMM` `NAM` 1 | `JTC` `REL` 2 | `TAS` `NAM` 1 | `STA` `ABS` 4 | `LDY` `IMM` 2 | `JMP` `ABS` 3 | `STY` `ABX` 4 | `CAL` `ZYV` 6 |
 | `$_A` | `SPP` `NAM` 1 | `JTD` `REL` 2 | `TAX` `NAM` 1 | `STA` `ZPG` 3 | `LDY` `ABS` 4 | `JMP` `ZPG` 2 | `STY` `ZPG` 3 | `JMP` `ZVX` 4 |
 | `$_B` | `SMM` `NAM` 1 | `JTN` `REL` 2 | `TAY` `NAM` 1 | `STA` `VEC` 6 | `LDY` `ABX` 4 | `JMP` `VEC` 5 | `STY` `ZPX` 3 | `JMP` `ZYV` 4 |
