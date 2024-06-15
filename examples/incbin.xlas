@@ -1,0 +1,5 @@
+; incbin example
+; BUILD: xlas incbin.xlas hello3.xlx
+; RUN: xlx hello3.xlx
+incbin 'hello.xlx'
+

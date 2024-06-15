@@ -1,5 +1,5 @@
 ; include example
-; BUILD: xlas hello.xlas hello2.xlx
+; BUILD: xlas include.xlas hello2.xlx
 ; RUN: xlx hello2.xlx
 include 'hello.xlas'
 
