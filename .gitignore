@@ -37,6 +37,7 @@
 *.hex
 xlx
 xlas
+xldis
 
 # Debug files
 *.dSYM/
