@@ -108,7 +108,7 @@ xlx_error(XL *xl, XL_Uint ecode)
   XLX *xlx = xl->userdata;
   assert(xlx != NULL && ecode == XL_ERR_INVALID);
   xl->p -= 1;
-  errf("%s: Invalid instruction executed at 0x%4X\n"
+  errf("%s: Invalid instruction executed at 0x%04X\n"
       , xlx->filename, (int)xl->p);
 }
 
@@ -136,7 +136,7 @@ xlx_store(XL *xl, XL_Word addr, XL_Byte data)
   if (addr == 0x7FFF)
     xlx->stop = 1;
   if (addr >= 0x8000)
-    errf("%s: Attempt to write to 0x%4X"
+    errf("%s: Attempt to write to 0x%04X"
         , xlx->filename, addr);
 }
 
