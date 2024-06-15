@@ -441,6 +441,10 @@ match:
     errf("%s:%i:%i: Unknown instruction pattern\n"
         , tok.filename, tok.row, tok.col);
   emitbyte(outbuf, i, 1);
+  if (mtype == Mimm) {
+    emitbyte(outbuf, val, 1);
+    return;
+  }
   if (label != 0) {
     planpatch(outbuf->size, label, mtype == Mrel, labtok);
     if (sz == 1) emitbyte(outbuf, 0, 1);
@@ -772,7 +776,7 @@ readprototok(void)
     {Tqor,    '|'}, {Tqnor,   '~'}, {Tqxor,   '^'},
     {Tminus,  '-'}, {Tplus,   '+'}, {Tdiv,    '/'},
     {Tcomma,  ','}, {Tcolon,  ':'}, {Tmult,   '*'},
-    {Tnewline, '\n'}
+    {Tsharp,  '#'}, {Tnewline, '\n'}
   };
   char buf[TOKCAP];
   int i = 0, err = 0;

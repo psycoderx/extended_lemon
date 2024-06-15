@@ -1,0 +1,18 @@
+; CAT program in XL assembly language
+; BUILD: xlas cat.xlas cat.xlx
+; RUN: xlx cat.xlx
+let io 0xFF
+let exit 0x7FFF
+  reset:
+lda io
+cmp #0xFF
+jtz ~break
+sta io
+jmp reset
+  break:
+sta exit
+  void:
+rb 0xFFFE - $
+  reset_address:
+dw reset
+
