@@ -641,7 +641,7 @@ doinclude(void)
   if (readtok() != Tstrlit)
     errf("%s:%i:%i: The include requires a filename string\n"
         , tok.filename, tok.row, tok.col);
-  filename = getstr(tok.strlit);
+  filename = getstr(curtok.strlit);
   readtok();
   if (curtok.type != Tnewline && curtok.type != Teof)
     errf("%s:%i:%i: Unexpected token\n"
