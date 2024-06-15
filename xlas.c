@@ -54,12 +54,6 @@ enum {
   Mzpy, Mvec, Mzvx, Mzyv
 };
 
-typedef struct Pattern {
-  int inst;
-  int amode;
-  unsigned char code;
-} Pattern;
-
 typedef struct Lexer {
   FILE *file;
   struct Lexer *prev;
@@ -102,6 +96,8 @@ typedef struct Backpatch {
   int offset;
   int label;
 } Backpatch;
+
+#include "xlitab.c"
 
 /*
 Print error and exit.
@@ -259,93 +255,6 @@ static const char *inames[] = {
 #include "xli.x.h"
 #undef X
   "unreachable"
-};
-
-static Pattern patterns[] = {
-  {Tinv, Mnam, 0x00}, {Tjfb, Mrel, 0x10}, {Tpha, Mnam, 0x20},
-  {Tlda, Mimm, 0x30}, {Tzrx, Mnam, 0x40}, {Tcmp, Mimm, 0x50},
-  {Tstx, Mabs, 0x60}, {Tnta, Mnam, 0x70}, {Tbrk, Mnam, 0x01},
-  {Tjfc, Mrel, 0x11}, {Tphf, Mnam, 0x21}, {Tlda, Mabs, 0x31},
-  {Tldx, Mimm, 0x41}, {Tcmp, Mabs, 0x51}, {Tstx, Maby, 0x61},
-  {Tcal, Mabs, 0x71}, {Trti, Mnam, 0x02}, {Tjfd, Mrel, 0x12},
-  {Tphx, Mnam, 0x22}, {Tlda, Mzpg, 0x32}, {Tldx, Mabs, 0x42},
-  {Tcmp, Mzpg, 0x52}, {Tstx, Mzpg, 0x62}, {Tcal, Mzpg, 0x72},
-  {Tret, Mnam, 0x03}, {Tjfn, Mrel, 0x13}, {Tphy, Mnam, 0x23},
-  {Tlda, Mvec, 0x33}, {Tldx, Maby, 0x43}, {Tcmp, Mvec, 0x53},
-  {Tstx, Mzpy, 0x63}, {Tcal, Mvec, 0x73}, {Tfor, Mimm, 0x04},
-  {Tjfr, Mrel, 0x14}, {Tpla, Mnam, 0x24}, {Tlda, Mabx, 0x34},
-  {Tldx, Mzpg, 0x44}, {Tcmp, Mabx, 0x54}, {Tstx, Mvec, 0x64},
-  {Tcal, Mabx, 0x74}, {Tfnd, Mimm, 0x05}, {Tjfu, Mrel, 0x15},
-  {Tplf, Mnam, 0x25}, {Tlda, Maby, 0x35}, {Tldx, Mzpy, 0x45},
-  {Tcmp, Maby, 0x55}, {Tstx, Mzyv, 0x65}, {Tcal, Maby, 0x75},
-  {Tclc, Mnam, 0x06}, {Tjfv, Mrel, 0x16}, {Tplx, Mnam, 0x26},
-  {Tlda, Mzpx, 0x36}, {Tldx, Mvec, 0x46}, {Tcmp, Mzpx, 0x56},
-  {Tlda, Mzvx, 0x66}, {Tcal, Mzpx, 0x76}, {Tnop, Mnam, 0x07},
-  {Tjfz, Mrel, 0x17}, {Tply, Mnam, 0x27}, {Tlda, Mzpy, 0x37},
-  {Tldx, Mzyv, 0x47}, {Tcmp, Mzpy, 0x57}, {Tlda, Mzyv, 0x67},
-  {Tcal, Mzpy, 0x77}, {Tapp, Mnam, 0x08}, {Tjtb, Mrel, 0x18},
-  {Ttaf, Mnam, 0x28}, {Tzra, Mnam, 0x38}, {Tzry, Mnam, 0x48},
-  {Tjmp, Mrel, 0x58}, {Tsty, Mabs, 0x68}, {Tcal, Mzvx, 0x78},
-  {Tamm, Mnam, 0x09}, {Tjtc, Mrel, 0x19}, {Ttas, Mnam, 0x29},
-  {Tsta, Mabs, 0x39}, {Tldy, Mimm, 0x49}, {Tjmp, Mabs, 0x59},
-  {Tsty, Mabx, 0x69}, {Tcal, Mzyv, 0x79}, {Tspp, Mnam, 0x0A},
-  {Tjtd, Mrel, 0x1A}, {Ttax, Mnam, 0x2A}, {Tsta, Mzpg, 0x3A},
-  {Tldy, Mabs, 0x4A}, {Tjmp, Mzpg, 0x5A}, {Tsty, Mzpg, 0x6A},
-  {Tjmp, Mzvx, 0x7A}, {Tsmm, Mnam, 0x0B}, {Tjtn, Mrel, 0x1B},
-  {Ttay, Mnam, 0x2B}, {Tsta, Mvec, 0x3B}, {Tldy, Mabx, 0x4B},
-  {Tjmp, Mvec, 0x5B}, {Tsty, Mzpx, 0x6B}, {Tjmp, Mzyv, 0x7B},
-  {Txpp, Mnam, 0x0C}, {Tjtr, Mrel, 0x1C}, {Ttfa, Mnam, 0x2C},
-  {Tsta, Mabx, 0x3C}, {Tldy, Mzpg, 0x4C}, {Tjmp, Mabx, 0x5C},
-  {Tsty, Mvec, 0x6C}, {Tcmp, Mzvx, 0x7C}, {Txmm, Mnam, 0x0D},
-  {Tjtu, Mrel, 0x1D}, {Ttsa, Mnam, 0x2D}, {Tsta, Maby, 0x3D},
-  {Tldy, Mzpx, 0x4D}, {Tjmp, Maby, 0x5D}, {Tsty, Mzvx, 0x6D},
-  {Tcmp, Mzyv, 0x7D}, {Typp, Mnam, 0x0E}, {Tjtv, Mrel, 0x1E},
-  {Ttxa, Mnam, 0x2E}, {Tsta, Mzpx, 0x3E}, {Tldy, Mvec, 0x4E},
-  {Tjmp, Mzpx, 0x5E}, {Tsta, Mzvx, 0x6E}, {Tsla, Mnam, 0x7E},
-  {Tymm, Mnam, 0x0F}, {Tjtz, Mrel, 0x1F}, {Ttya, Mnam, 0x2F},
-  {Tsta, Mzpy, 0x3F}, {Tldy, Mzvx, 0x4F}, {Tjmp, Mzpy, 0x5F},
-  {Tsta, Mzyv, 0x6F}, {Tsra, Mnam, 0x7F}, {Tinc, Mabs, 0x80},
-  {Tdec, Mabs, 0x90}, {Tbit, Mimm, 0xA0}, {Tbor, Mimm, 0xB0},
-  {Tadc, Mimm, 0xC0}, {Tadd, Mimm, 0xD0}, {Tbit, Mzvx, 0xE0},
-  {Tnot, Mzpg, 0xF0}, {Tinc, Mabx, 0x81}, {Tdec, Mabx, 0x91},
-  {Tbit, Mabs, 0xA1}, {Tbor, Mabs, 0xB1}, {Tadc, Mabs, 0xC1},
-  {Tadd, Mabs, 0xD1}, {Tbit, Mzyv, 0xE1}, {Tnot, Mzpx, 0xF1},
-  {Tinc, Maby, 0x82}, {Tdec, Maby, 0x92}, {Tbit, Mzpg, 0xA2},
-  {Tbor, Mzpg, 0xB2}, {Tadc, Mzpg, 0xC2}, {Tadd, Mzpg, 0xD2},
-  {Tand, Mzvx, 0xE2}, {Tnot, Mabs, 0xF2}, {Tinc, Mzpg, 0x83},
-  {Tdec, Mzpg, 0x93}, {Tbit, Mvec, 0xA3}, {Tbor, Mvec, 0xB3},
-  {Tadc, Mvec, 0xC3}, {Tadd, Mvec, 0xD3}, {Tand, Mzyv, 0xE3},
-  {Tnot, Mabx, 0xF3}, {Tinc, Mzpx, 0x84}, {Tdec, Mzpx, 0x94},
-  {Tbit, Mabx, 0xA4}, {Tbor, Mabx, 0xB4}, {Tadc, Mabx, 0xC4},
-  {Tadd, Mabx, 0xD4}, {Tbor, Mzvx, 0xE4}, {Tshl, Mzpg, 0xF4},
-  {Tinc, Mzpy, 0x85}, {Tdec, Mzpy, 0x95}, {Tbit, Maby, 0xA5},
-  {Tbor, Maby, 0xB5}, {Tadc, Maby, 0xC5}, {Tadd, Maby, 0xD5},
-  {Tbor, Mzyv, 0xE5}, {Tshl, Mzpx, 0xF5}, {Tinc, Mvec, 0x86},
-  {Tdec, Mvec, 0x96}, {Tbit, Mzpx, 0xA6}, {Tbor, Mzpx, 0xB6},
-  {Tadc, Mzpx, 0xC6}, {Tadd, Mzpx, 0xD6}, {Txor, Mzvx, 0xE6},
-  {Tshl, Mabs, 0xF6}, {Tinc, Mzvx, 0x87}, {Tdec, Mzvx, 0x97},
-  {Tbit, Mzpy, 0xA7}, {Tbor, Mzpy, 0xB7}, {Tadc, Mzpy, 0xC7},
-  {Tadd, Mzpy, 0xD7}, {Txor, Mzyv, 0xE7}, {Tshl, Mabx, 0xF7},
-  {Tinc, Mzyv, 0x88}, {Tdec, Mzyv, 0x98}, {Tand, Mimm, 0xA8},
-  {Txor, Mimm, 0xB8}, {Tsbc, Mimm, 0xC8}, {Tsub, Mimm, 0xD8},
-  {Tadc, Mzvx, 0xE8}, {Tshr, Mzpg, 0xF8}, {Tcpx, Mimm, 0x89},
-  {Tcpy, Mimm, 0x99}, {Tand, Mabs, 0xA9}, {Txor, Mabs, 0xB9},
-  {Tsbc, Mabs, 0xC9}, {Tsub, Mabs, 0xD9}, {Tadc, Mzyv, 0xE9},
-  {Tshr, Mzpx, 0xF9}, {Tcpx, Mabs, 0x8A}, {Tcpy, Mabs, 0x9A},
-  {Tand, Mzpg, 0xAA}, {Txor, Mzpg, 0xBA}, {Tsbc, Mzpg, 0xCA},
-  {Tsub, Mzpg, 0xDA}, {Tsbc, Mzvx, 0xEA}, {Tshr, Mabs, 0xFA},
-  {Tcpx, Maby, 0x8B}, {Tcpy, Mabx, 0x9B}, {Tand, Mvec, 0xAB},
-  {Txor, Mvec, 0xBB}, {Tsbc, Mvec, 0xCB}, {Tsub, Mvec, 0xDB},
-  {Tsbc, Mzyv, 0xEB}, {Tshr, Mabx, 0xFB}, {Tcpx, Mzpg, 0x8C},
-  {Tcpy, Mzpg, 0x9C}, {Tand, Mabx, 0xAC}, {Txor, Mabx, 0xBC},
-  {Tsbc, Mabx, 0xCC}, {Tsub, Mabx, 0xDC}, {Tadd, Mzvx, 0xEC},
-  {Tcpx, Mzpy, 0x8D}, {Tcpy, Mzpx, 0x9D}, {Tand, Maby, 0xAD},
-  {Txor, Maby, 0xBD}, {Tsbc, Maby, 0xCD}, {Tsub, Maby, 0xDD},
-  {Tadd, Mzyv, 0xED}, {Tcpx, Mvec, 0x8E}, {Tcpy, Mvec, 0x9E},
-  {Tand, Mzpx, 0xAE}, {Txor, Mzpx, 0xBE}, {Tsbc, Mzpx, 0xCE},
-  {Tsub, Mzpx, 0xDE}, {Tsub, Mzvx, 0xEE}, {Tcpx, Mzyv, 0x8F},
-  {Tcpy, Mzvx, 0x9F}, {Tand, Mzpy, 0xAF}, {Txor, Mzpy, 0xBF},
-  {Tsbc, Mzpy, 0xCF}, {Tsub, Mzpy, 0xDF}, {Tsub, Mzyv, 0xEF},
 };
 
 /************************************************************/
@@ -523,15 +432,15 @@ match:
   if (curtok.type != Tnewline && curtok.type != Teof)
     errf("%s:%i:%i: Unexpected token\n"
         , curtok.filename, curtok.row, curtok.col);
-  for (i = 0; i < (int)numof(patterns); ++i) {
-    p = &patterns[i];
+  for (i = 0; i < (int)numof(itable); ++i) {
+    p = &itable[i];
     if (p->inst == inst && p->amode == mtype)
       break;
   }
-  if (i == numof(patterns))
+  if (i == numof(itable))
     errf("%s:%i:%i: Unknown instruction pattern\n"
         , tok.filename, tok.row, tok.col);
-  emitbyte(outbuf, p->code, 1);
+  emitbyte(outbuf, i, 1);
   if (label != 0) {
     planpatch(outbuf->size, label, mtype == Mrel, labtok);
     if (sz == 1) emitbyte(outbuf, 0, 1);
