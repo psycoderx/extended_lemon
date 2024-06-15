@@ -1,0 +1,51 @@
+; Fibonacci Sequence in XL assembly language
+; BUILD: xlas fibonacci.xlas fib.xlx
+; RUN: xlx fib.xlx
+let io 0xFF
+let exit 0x7FFF
+let A 0
+let B 1
+  reset:
+lda #1
+sta A
+sta B
+  loop:
+lda A
+; most significant digit
+tay
+sra
+sra
+sra
+sra
+and #0xF; because of the carry flag
+tax
+lda x digits
+sta io
+; least significant digit
+tya
+and #0xF
+tax
+lda x digits
+sta io
+; newline
+lda #0x0A
+sta io
+; repeat
+lda B
+tay
+lda A
+sta B
+tya
+add A
+sta A
+jtc ~break
+jmp ~loop
+  break:
+sta exit
+  digits:
+db '0123456789ABCDEF'
+  void:
+rb 0xFFFE - $
+  reset_address:
+dw reset
+

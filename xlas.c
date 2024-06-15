@@ -726,7 +726,7 @@ void
 emit(Sect *sect, const char *buf, int len)
 {
   if (sect->size + len > sect->maxsize)
-    errf("%s: Too much bytes in the program\n");
+    errf("xlx: Too much bytes in the program\n");
   memcpy(sect->buf + sect->size, buf, len);
   sect->size += len;
 }
