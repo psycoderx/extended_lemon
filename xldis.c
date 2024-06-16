@@ -19,6 +19,8 @@ xldis <input-files...>
 #define numof(arr) \
   (sizeof(arr)/sizeof((arr)[0]))
 
+#include "extended_lemon.h"
+
 enum {
 #define X(name) T##name,
 #include "xli.x.h"
@@ -65,6 +67,7 @@ main(int argc, char **argv)
   size_t readn = 0;
   int a = 0, i = 0, n = 0, k = 0, limit = 0, zeros = 0;
   int m = 0, nomem = 0, val = 0, prgsize = 0;
+  XL_Word addr = 0;
   if (argc < 2)
     errf("xldis: No input files\n");
   prgsize = 0x8000 - 8;
@@ -110,13 +113,16 @@ main(int argc, char **argv)
         putchar('\n');
         continue;
       }
-      printf("  %s ", inames[p->inst]);
+      printf("  %s", inames[p->inst]);
       m = p->amode;
-      if (m == Mabx || m == Mzpx || m == Mzvx) printf("x ");
-      if (m == Maby || m == Mzpy || m == Mzyv) printf("y ");
-      if (m == Mvec || m == Mzvx || m == Mzyv) printf("*");
-      if (m == Mimm) printf("#");
-      if (m == Mrel) printf("~");
+      if (m == Mabs || m == Mzpg) printf(" ");
+      if (m == Mabx || m == Mzpx) printf(" x ");
+      if (m == Maby || m == Mzpy) printf(" y ");
+      if (m == Mzvx) printf(" x *");
+      if (m == Mzyv) printf(" y *");
+      if (m == Mvec) printf(" *");
+      if (m == Mimm) printf(" #");
+      if (m == Mrel) printf(" ~");
       if (n == 2) {
         val = prg[i + 1];
         /**/ if (m == Mimm) {
@@ -125,7 +131,8 @@ main(int argc, char **argv)
         else if (m == Mrel) {
           if (val > 127)
             val |= ~0xFF;
-          printf("%i -> 0x%04X", val, 0x8000 + i + val);
+          addr = 0x8000 + i + val;
+          printf("%i -> 0x%04X", val, addr);
         }
         else {
           printf("0x%02X", val);
