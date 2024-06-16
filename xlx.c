@@ -172,8 +172,8 @@ main(int argc, char **argv)
           val |= xlx->mem[addr] << 8;
           fprintf(stderr, "0x%04X", val);
         }
-        fprintf(stderr, "\n");
         xlxdb_diff(prevxl, xl);
+        fprintf(stderr, "\n");
         memcpy(prevxl, xl, sizeof(*xl));
       }
     }
@@ -188,6 +188,8 @@ xlxdb_diff(XL *prevxl, XL *xl)
   int diff = (prevxl->f != xl->f) || (prevxl->a != xl->a)
           || (prevxl->s != xl->s) || (prevxl->x != xl->x)
           || (prevxl->y != xl->y);
+  if (diff)
+    fprintf(stderr, " >>>");
   if (prevxl->f != xl->f) {
     fprintf(stderr, " f: %c%c%c%c%c%c%c%c;"
            , XL_get_flag(xl, XL_FLAG_Z) ? 'Z' : '-'
@@ -207,8 +209,6 @@ xlxdb_diff(XL *prevxl, XL *xl)
     fprintf(stderr, " x = %i;", xl->x);
   if (prevxl->y != xl->y)
     fprintf(stderr, " y = %i;", xl->y);
-  if (diff)
-    fprintf(stderr, "\n");
 }
 
 /************************************************************/
