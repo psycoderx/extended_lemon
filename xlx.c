@@ -3,8 +3,12 @@ xlx.c - is a simple XL powered virtual vachine.
 See LICENSE information in the end of the file.
   BUILD
 gcc -std=c89 -pedantic -Wall -Wextra -o xlx xlx.c
+ or
+gcc -std=c89 -pedantic -Wall -Wextra -DXLXDB -o xlxdb xlx.c
   RUN
 xlx <input-files...>
+ or
+xlxdb <input-files...>
 */
 
 #include <assert.h>
@@ -17,11 +21,42 @@ xlx <input-files...>
 
 #include "extended_lemon.h"
 
+#ifdef XLXDB
+#define XLXDEBUG 1
+#else
+#define XLXDEBUG 0
+#endif
+
 typedef struct XLX {
   XL_Byte mem[0x10000];
   const char *filename;
   int stop;
 } XLX;
+
+enum {
+#define X(name) T##name,
+#include "xli.x.h"
+#undef X
+  Tcount
+};
+
+enum {
+  Mnam, Mimm, Mabs, Mabx, Maby, Mrel, Mzpg, Mzpx,
+  Mzpy, Mvec, Mzvx, Mzyv
+};
+
+#include "xlitab.c"
+
+static const char *inames[] = {
+#define X(name) #name,
+#include "xli.x.h"
+#undef X
+  "unreachable"
+};
+
+static int sizes[] = {
+  1, 2, 3, 3, 3, 2, 2, 2, 2, 3, 2, 2
+};
 
 /*
 Print error and exit.
@@ -53,16 +88,26 @@ Open the file with XLX.
 void
 xlx_init(XLX *xlx, const char *filename);
 
+/*
+Printf the difference.
+*/
+void
+xlxdb_diff(XL *prevxl, XL *xl);
+
 /************************************************************/
 int
 main(int argc, char **argv)
 {
   static XLX static_xlx;
   static XL static_xl;
+  static XL static_pervxl;
   XL *xl = &static_xl;
+  XL *prevxl = &static_pervxl;
   XLX *xlx = &static_xlx;
+  Pattern *p = NULL;
   time_t t0, t;
-  int i = 0, c = 0;
+  int i = 0, c = 0, m = 0, n = 0, val = 0;
+  XL_Word addr = 0;
   if (argc < 2)
     errf("xlx: No input files\n");
   XL_init(xl);
@@ -74,15 +119,96 @@ main(int argc, char **argv)
   for (i = 1; i < argc; ++i) {
     xlx_init(xlx, argv[i]);
     XL_restart(xl);
+    memcpy(prevxl, xl, sizeof(*xl));
+    prevxl->p = xlx->mem[0xFFFE];
+    prevxl->p |= xlx->mem[0xFFFF] << 8;
     while (!xlx->stop) {
-      for (c = 0; c < XL_FREQ && !xlx->stop; ++c)
-        XL_cycle(xl);
-      while (t0 == t && !xlx->stop)
-        t = time(NULL);
-      t0 = t;
+      if (!XLXDEBUG) {
+        for (c = 0; c < XL_FREQ && !xlx->stop; ++c)
+          XL_cycle(xl);
+        while (t0 == t && !xlx->stop)
+          t = time(NULL);
+        t0 = t;
+      }
+      else {
+        while (!XL_cycle(xl))
+          /* nothing */;
+        p = &itable[xlx->mem[prevxl->p]];
+        n = sizes[p->amode];
+        m = p->amode;
+        fprintf(stderr, " %04X  %s"
+               , prevxl->p, inames[p->inst]);
+        if (m == Mabs || m == Mzpg)
+          fprintf(stderr, " ");
+        if (m == Mabx || m == Mzpx || m == Mzvx)
+          fprintf(stderr, " x ");
+        if (m == Maby || m == Mzpy || m == Mzyv)
+          fprintf(stderr, " y ");
+        if (m == Mvec || m == Mzvx || m == Mzyv)
+          fprintf(stderr, " *");
+        if (m == Mimm)
+          fprintf(stderr, " #");
+        if (m == Mrel)
+          fprintf(stderr, " ~");
+        addr = prevxl->p + 1;
+        if (n == 2) {
+          val = xlx->mem[addr];
+          /**/ if (m == Mimm) {
+            fprintf(stderr, "%i", val);
+          }
+          else if (m == Mrel) {
+            if (val > 127)
+              val |= ~0xFF;
+            addr = prevxl->p + val;
+            fprintf(stderr, "%i -> 0x%04X", val, addr);
+          }
+          else {
+            fprintf(stderr, "0x%02X", val);
+          }
+        }
+        if (n == 3) {
+          val = xlx->mem[addr];
+          ++addr;
+          val |= xlx->mem[addr] << 8;
+          fprintf(stderr, "0x%04X", val);
+        }
+        fprintf(stderr, "\n");
+        xlxdb_diff(prevxl, xl);
+        memcpy(prevxl, xl, sizeof(*xl));
+      }
     }
   }
   return 0;
+}
+
+/************************************************************/
+void
+xlxdb_diff(XL *prevxl, XL *xl)
+{
+  int diff = (prevxl->f != xl->f) || (prevxl->a != xl->a)
+          || (prevxl->s != xl->s) || (prevxl->x != xl->x)
+          || (prevxl->y != xl->y);
+  if (prevxl->f != xl->f) {
+    fprintf(stderr, " f: %c%c%c%c%c%c%c%c;"
+           , XL_get_flag(xl, XL_FLAG_Z) ? 'Z' : '-'
+           , XL_get_flag(xl, XL_FLAG_V) ? 'V' : '-'
+           , XL_get_flag(xl, XL_FLAG_U) ? 'U' : '-'
+           , XL_get_flag(xl, XL_FLAG_R) ? 'R' : '-'
+           , XL_get_flag(xl, XL_FLAG_N) ? 'N' : '-'
+           , XL_get_flag(xl, XL_FLAG_D) ? 'D' : '-'
+           , XL_get_flag(xl, XL_FLAG_C) ? 'C' : '-'
+           , XL_get_flag(xl, XL_FLAG_B) ? 'B' : '-');
+  }
+  if (prevxl->a != xl->a)
+    fprintf(stderr, " a = %i;", xl->a);
+  if (prevxl->s != xl->s)
+    fprintf(stderr, " s = %i;", xl->s);
+  if (prevxl->x != xl->x)
+    fprintf(stderr, " x = %i;", xl->x);
+  if (prevxl->y != xl->y)
+    fprintf(stderr, " y = %i;", xl->y);
+  if (diff)
+    fprintf(stderr, "\n");
 }
 
 /************************************************************/
@@ -121,9 +247,18 @@ XL_Byte
 xlx_load(XL *xl, XL_Word addr)
 {
   XLX *xlx = xl->userdata;
+  int ch = 0;
   assert(xlx != NULL);
-  if (addr == 0x00FF)
-    return getchar();
+  if (addr == 0x00FF) {
+    if (!XLXDEBUG) {
+      return getchar();
+    }
+    else {
+      ch = getchar();
+      fprintf(stderr, "input VVV %i\n", ch);
+      return ch;
+    }
+  }
   return xlx->mem[addr];
 }
 
@@ -133,8 +268,15 @@ xlx_store(XL *xl, XL_Word addr, XL_Byte data)
 {
   XLX *xlx = xl->userdata;
   assert(xlx != NULL);
-  if (addr == 0x00FF)
-    putchar(data);
+  if (addr == 0x00FF) {
+    if (!XLXDEBUG) {
+      putchar(data);
+    }
+    else {
+      putchar(data);
+      fprintf(stderr, "output VVV %i\n", data);
+    }
+  }
   if (addr <= 0x7FFE)
     xlx->mem[addr] = data;
   if (addr == 0x7FFF)
