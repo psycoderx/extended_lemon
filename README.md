@@ -42,6 +42,11 @@ Why you cannot create a file less than 32KB? Because the last
 interrupt address. That address is needed for the XL to found
 the first instruction byte to execute.
 
+### XLXDB
+
+You can compile [xlx.c](./xlx.c) with `-DXLXDB` to get a version
+of xlx that logs executed instructions.
+
 ## XLAS
 
 [xlas.c](./xlas.c) is the XL assembler.
