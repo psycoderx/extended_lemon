@@ -138,18 +138,14 @@ main(int argc, char **argv)
         m = p->amode;
         fprintf(stderr, " %04X  %s"
                , prevxl->p, inames[p->inst]);
-        if (m == Mabs || m == Mzpg)
-          fprintf(stderr, " ");
-        if (m == Mabx || m == Mzpx || m == Mzvx)
-          fprintf(stderr, " x ");
-        if (m == Maby || m == Mzpy || m == Mzyv)
-          fprintf(stderr, " y ");
-        if (m == Mvec || m == Mzvx || m == Mzyv)
-          fprintf(stderr, " *");
-        if (m == Mimm)
-          fprintf(stderr, " #");
-        if (m == Mrel)
-          fprintf(stderr, " ~");
+        if (m == Mabs || m == Mzpg) fprintf(stderr, " ");
+        if (m == Mabx || m == Mzpx) fprintf(stderr, " x ");
+        if (m == Maby || m == Mzpy) fprintf(stderr, " y ");
+        if (m == Mzvx) fprintf(stderr, " x *");
+        if (m == Mzyv) fprintf(stderr, " y *");
+        if (m == Mvec) fprintf(stderr, " *");
+        if (m == Mimm) fprintf(stderr, " #");
+        if (m == Mrel) fprintf(stderr, " ~");
         addr = prevxl->p + 1;
         if (n == 2) {
           val = xlx->mem[addr];
