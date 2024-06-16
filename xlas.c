@@ -250,6 +250,11 @@ static Lexer *L;
 static Tok curtok;
 static Sect *outbuf;
 
+static const char *signatures[] = {
+  "", " #", " ", " x ", " y ", " ~", " ", " x ",
+  " y ", " *", " x *", " y *"
+};
+
 static const char *inames[] = {
 #define X(name) #name,
 #include "xli.x.h"
@@ -379,7 +384,7 @@ readinst(int inst)
 {
   Tok tok = curtok, labtok;
   Pattern *p = NULL;
-  int mtype = Mnam, t = 0, i = 0, val = 0;
+  int mtype = Mnam, t = 0, i = 0, val = 0, mbamode = 0;
   int label = 0, sz = 0, rel = 0, addr = 0;
   t = readtok();
   /**/ if (t == Tnewline || t == Teof) {
@@ -437,9 +442,19 @@ match:
     if (p->inst == inst && p->amode == mtype)
       break;
   }
-  if (i == numof(itable))
+  if (i == numof(itable)) {
+    for (i = 0; i < (int)numof(itable); ++i) {
+      p = &itable[i];
+      if (p->inst == inst) {
+        mbamode = p->amode;
+        break; /* TODO: make it smarter? */
+      }
+    }
     errf("%s:%i:%i: Unknown instruction pattern\n"
-        , tok.filename, tok.row, tok.col);
+         "Did you mean %s%s?\n"
+        , tok.filename, tok.row, tok.col
+        , inames[inst], signatures[mbamode]);
+  }
   emitbyte(outbuf, i, 1);
   if (mtype == Mimm) {
     emitbyte(outbuf, val, 1);
