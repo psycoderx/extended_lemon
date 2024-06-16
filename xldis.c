@@ -20,35 +20,7 @@ xldis <input-files...>
   (sizeof(arr)/sizeof((arr)[0]))
 
 #include "extended_lemon.h"
-
-enum {
-#define X(name) T##name,
-#include "xli.x.h"
-#undef X
-  Tcount
-};
-
-enum {
-  Mnam, Mimm, Mabs, Mabx, Maby, Mrel, Mzpg, Mzpx,
-  Mzpy, Mvec, Mzvx, Mzyv
-};
-
-#include "xlitab.c"
-
-static const char *inames[] = {
-#define X(name) #name,
-#include "xli.x.h"
-#undef X
-  "unreachable"
-};
-
-static int sizes[] = {
-  1, 2, 3, 3, 3, 2, 2, 2, 2, 3, 2, 2
-};
-
-static const char *intnames[] = {
-  "reserved", "break", "react", "reset"
-};
+#include "extended_lemon_extra.h"
 
 /*
 Print error and exit.
@@ -63,7 +35,7 @@ main(int argc, char **argv)
   unsigned char prg[0x8000];
   FILE *f = NULL;
   const char *name = NULL;
-  Pattern *p = NULL;
+  XL_Combo *p = NULL;
   size_t readn = 0;
   int a = 0, i = 0, n = 0, k = 0, limit = 0, zeros = 0;
   int m = 0, nomem = 0, val = 0, prgsize = 0;
@@ -95,8 +67,8 @@ main(int argc, char **argv)
         zeros = 0;
         continue;
       }
-      p = &itable[prg[i]];
-      n = sizes[p->amode];
+      p = &XL_combos[prg[i]];
+      n = XL_modesizes[p->amode];
       nomem = i + n > prgsize;
       if (nomem) limit = prgsize;
       else       limit = i + n;
@@ -113,16 +85,9 @@ main(int argc, char **argv)
         putchar('\n');
         continue;
       }
-      printf("  %s", inames[p->inst]);
+      printf("  %s", XL_keywords[p->inst]);
       m = p->amode;
-      if (m == Mabs || m == Mzpg) printf(" ");
-      if (m == Mabx || m == Mzpx) printf(" x ");
-      if (m == Maby || m == Mzpy) printf(" y ");
-      if (m == Mzvx) printf(" x *");
-      if (m == Mzyv) printf(" y *");
-      if (m == Mvec) printf(" *");
-      if (m == Mimm) printf(" #");
-      if (m == Mrel) printf(" ~");
+      printf("%s", XL_msignatures[m]);
       if (n == 2) {
         val = prg[i + 1];
         /**/ if (m == Mimm) {
@@ -148,7 +113,7 @@ main(int argc, char **argv)
     for (i = 0x8000 - 8; i < 0x8000; i += 2) {
       val = (prg[i + 1] << 8) | prg[i];
       printf(" %04X                 dw ", 0x8000 + i);
-      printf("0x%04X; %s\n", val, intnames[k]);
+      printf("0x%04X; %s\n", val, XL_interrupts[k]);
       ++k;
     }
   }
@@ -166,6 +131,9 @@ errf(const char *fmt, ...)
   va_end(args);
   exit(EXIT_FAILURE);
 }
+
+#define XL_EXTRA_C
+#include "extended_lemon_extra.h"
 
 /*
 MIT License

@@ -20,6 +20,7 @@ xlxdb <input-files...>
 #include <time.h>
 
 #include "extended_lemon.h"
+#include "extended_lemon_extra.h"
 
 #ifdef XLXDB
 #define XLXDEBUG 1
@@ -32,31 +33,6 @@ typedef struct XLX {
   const char *filename;
   int stop;
 } XLX;
-
-enum {
-#define X(name) T##name,
-#include "xli.x.h"
-#undef X
-  Tcount
-};
-
-enum {
-  Mnam, Mimm, Mabs, Mabx, Maby, Mrel, Mzpg, Mzpx,
-  Mzpy, Mvec, Mzvx, Mzyv
-};
-
-#include "xlitab.c"
-
-static const char *inames[] = {
-#define X(name) #name,
-#include "xli.x.h"
-#undef X
-  "unreachable"
-};
-
-static int sizes[] = {
-  1, 2, 3, 3, 3, 2, 2, 2, 2, 3, 2, 2
-};
 
 /*
 Print error and exit.
@@ -104,7 +80,7 @@ main(int argc, char **argv)
   XL *xl = &static_xl;
   XL *prevxl = &static_pervxl;
   XLX *xlx = &static_xlx;
-  Pattern *p = NULL;
+  XL_Combo *p = NULL;
   time_t t0, t;
   int i = 0, c = 0, m = 0, n = 0, val = 0;
   XL_Word addr = 0;
@@ -133,19 +109,12 @@ main(int argc, char **argv)
       else {
         while (!XL_cycle(xl))
           /* nothing */;
-        p = &itable[xlx->mem[prevxl->p]];
-        n = sizes[p->amode];
+        p = &XL_combos[xlx->mem[prevxl->p]];
+        n = XL_modesizes[p->amode];
         m = p->amode;
-        fprintf(stderr, " %04X  %s"
-               , prevxl->p, inames[p->inst]);
-        if (m == Mabs || m == Mzpg) fprintf(stderr, " ");
-        if (m == Mabx || m == Mzpx) fprintf(stderr, " x ");
-        if (m == Maby || m == Mzpy) fprintf(stderr, " y ");
-        if (m == Mzvx) fprintf(stderr, " x *");
-        if (m == Mzyv) fprintf(stderr, " y *");
-        if (m == Mvec) fprintf(stderr, " *");
-        if (m == Mimm) fprintf(stderr, " #");
-        if (m == Mrel) fprintf(stderr, " ~");
+        fprintf(stderr, " %04X  ", prevxl->p);
+        fprintf(stderr, "%s", XL_keywords[p->inst]);
+        fprintf(stderr, "%s", XL_msignatures[m]);
         addr = prevxl->p + 1;
         if (n == 2) {
           val = xlx->mem[addr];
@@ -296,6 +265,8 @@ errf(const char *fmt, ...)
 
 #define EXTENDED_LEMON_C
 #include "extended_lemon.h"
+#define XL_EXTRA_C
+#include "extended_lemon_extra.h"
 
 /*
 MIT License

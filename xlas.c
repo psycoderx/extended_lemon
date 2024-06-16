@@ -16,6 +16,9 @@ xlas <input-file> <output-file>
 #include <string.h>
 #include <time.h>
 
+#include "extended_lemon.h"
+#include "extended_lemon_extra.h"
+
 #define new(type) \
   memset(domalloc(sizeof(type)), 0, sizeof(type))
 
@@ -42,16 +45,7 @@ enum {
   Tminus   = -4,
   Tplus    = -3,
   Tcomma   = -2,
-  Tcolon   = -1,
-#define X(name) T##name,
-#include "xli.x.h"
-#undef X
-  Tcount
-};
-
-enum {
-  Mnam, Mimm, Mabs, Mabx, Maby, Mrel, Mzpg, Mzpx,
-  Mzpy, Mvec, Mzvx, Mzyv
+  Tcolon   = -1
 };
 
 typedef struct Lexer {
@@ -96,8 +90,6 @@ typedef struct Backpatch {
   int offset;
   int label;
 } Backpatch;
-
-#include "xlitab.c"
 
 /*
 Print error and exit.
@@ -250,18 +242,6 @@ static Lexer *L;
 static Tok curtok;
 static Sect *outbuf;
 
-static const char *signatures[] = {
-  "", " #", " ", " x ", " y ", " ~", " ", " x ",
-  " y ", " *", " x *", " y *"
-};
-
-static const char *inames[] = {
-#define X(name) #name,
-#include "xli.x.h"
-#undef X
-  "unreachable"
-};
-
 /************************************************************/
 int
 main(int argc, char **argv)
@@ -284,7 +264,7 @@ main(int argc, char **argv)
   strcap = Tcount * 2;
   strtab = domalloc(strcap * sizeof(strtab[0]));
   for (i = 0; i < Tcount; ++i)
-    getsi(inames[i]);
+    getsi(XL_keywords[i]);
   varcap = 8;
   vartab = domalloc(varcap * sizeof(vartab[0]));
   setvar(getsi("$"), 0, 0);
@@ -383,7 +363,7 @@ void
 readinst(int inst)
 {
   Tok tok = curtok, labtok;
-  Pattern *p = NULL;
+  XL_Combo *p = NULL;
   int mtype = Mnam, t = 0, i = 0, val = 0, mbamode = 0;
   int label = 0, sz = 0, rel = 0, addr = 0;
   t = readtok();
@@ -437,14 +417,14 @@ match:
   if (curtok.type != Tnewline && curtok.type != Teof)
     errf("%s:%i:%i: Unexpected token\n"
         , curtok.filename, curtok.row, curtok.col);
-  for (i = 0; i < (int)numof(itable); ++i) {
-    p = &itable[i];
+  for (i = 0; i < XL_NUM_COMBOS; ++i) {
+    p = &XL_combos[i];
     if (p->inst == inst && p->amode == mtype)
       break;
   }
-  if (i == numof(itable)) {
-    for (i = 0; i < (int)numof(itable); ++i) {
-      p = &itable[i];
+  if (i == XL_NUM_COMBOS) {
+    for (i = 0; i < XL_NUM_COMBOS; ++i) {
+      p = &XL_combos[i];
       if (p->inst == inst) {
         mbamode = p->amode;
         break; /* TODO: make it smarter? */
@@ -453,7 +433,7 @@ match:
     errf("%s:%i:%i: Unknown instruction pattern\n"
          "Did you mean %s%s?\n"
         , tok.filename, tok.row, tok.col
-        , inames[inst], signatures[mbamode]);
+        , XL_keywords[inst], XL_msignatures[mbamode]);
   }
   emitbyte(outbuf, i, 1);
   if (mtype == Mimm) {
@@ -1006,6 +986,9 @@ dorealloc(void *oldptr, size_t newsize)
     errf("xlas: realloc failed\n");
   return ptr;
 }
+
+#define XL_EXTRA_C
+#include "extended_lemon_extra.h"
 
 /*
 MIT License

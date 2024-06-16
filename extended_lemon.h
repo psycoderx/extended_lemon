@@ -87,14 +87,14 @@ Calling convention for the private XL functions.
 #endif
 
 /*
-Declaration specifiers the for public XL functions.
+Declaration specifiers for the public XL functions.
 */
 #ifndef XL_DECL
 #define XL_DECL
 #endif
 
 /*
-Declaration specifiers the for private XL functions.
+Declaration specifiers for the private XL functions.
 */
 #ifndef XLI_DECL
 #define XLI_DECL
